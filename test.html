@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>approach test</title>
+	<style type="text/css">
+	* {
+		text-align: center;
+	}
+	</style>
+</head>
+<body style="height:1000px;">
+<div style="position:fixed;width:100%;">
+	<h1>Test approach</h1>
+	<h3 id="test1">1. no approach</h3>
+	<h3 id="test2">2. no approach</h3>
+</div>
+<div id="scroller" style="height:200px;width:500px;overflow:scroll;position:fixed;top:180px;">
+	<div style="height:600px;background:#999;padding-top:20px;">scroll the div</div>
+</div>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="./approach.js"></script>
+<script>
+var count1 = 1,
+	count2 = 1;
+
+$(window).load(function () {
+	$(document.documentElement).approach(function () {
+		$('#test1').text('window approach ' + (count1++) + ' times');
+	});
+
+$('#scroller').approach(function () {
+	$('#test2').text('div approach ' + (count2++) + ' times');
+});
+});
+</script>
+</body>
+</html>
