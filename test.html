@@ -13,6 +13,7 @@
 	<h1>Test approach</h1>
 	<h3 id="test1">1. no approach</h3>
 	<h3 id="test2">2. no approach</h3>
+	<h3 id="test3">3. no approach</h3>
 </div>
 <div id="scroller" style="height:200px;width:500px;overflow:scroll;position:fixed;top:180px;">
 	<div style="height:600px;background:#999;padding-top:20px;">scroll the div</div>
@@ -21,16 +22,21 @@
 <script src="./approach.js"></script>
 <script>
 var count1 = 1,
-	count2 = 1;
+	count2 = 1,
+	count3 = 1;
 
-$(window).load(function () {
+$(function () {
 	$(document.documentElement).approach(function () {
 		$('#test1').text('window approach ' + (count1++) + ' times');
 	});
 
-$('#scroller').approach(function () {
-	$('#test2').text('div approach ' + (count2++) + ' times');
-});
+	$('#scroller').approach(function () {
+		$('#test2').text('div approach ' + (count2++) + ' times');
+	});
+
+	$('#scroller').approach(function () {
+		$('#test3').text('div approach ' + (count3++) + ' times');
+	});
 });
 </script>
 </body>

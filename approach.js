@@ -11,7 +11,7 @@
 
 		this.triggerCallback = function () {
 			clearTimeout(timer);
-			timer = setTimeout(callback, 25); // 25ms节流时间
+			timer = setTimeout(callback, this.options.throttleTime); 
 		};
 
 		(this.isWindow() ? $(window) : this.$element).on('scroll.approach resize.approach', this.triggerCallback);
@@ -20,7 +20,8 @@
 	Approach.DEFAULTS = {
 		threshold: 20,
 		callback: $.noop,
-		horizental: false
+		horizental: false,
+		throttleTime: 25
 	};
 
 	Approach.prototype = {
@@ -48,10 +49,6 @@
 				}
 
 				this.disable();
-
-				if (typeof fn === 'string') {
-					fn = new Function(fn);
-				} 
 				fn.call(this.$element[0], {
 					options: $.extend({}, this.options)
 				}); 
@@ -119,8 +116,8 @@
 
 		this.each(function () {
 			var $this = $(this),
-				data = $this.data('approach'),
-				options = $.extend({}, Approach.DEFAULTS, $this.data(), typeof option === 'object' && option);
+				options = $.extend({}, Approach.DEFAULTS, typeof option === 'object' && option),
+				data = $this.data('approach');
 
 			if (!data) {
 				$this.data('approach', data = [new Approach(this, options)]);
@@ -139,6 +136,8 @@
 
 		return this;
 	};
+
+	$.fn.approach.Constructor = Approach;
 
 	$.fn.approach.noConflict = function () {
 		$.fn.approach = old;
