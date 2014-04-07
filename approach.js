@@ -1,20 +1,35 @@
+/*
+ * Jquery approach 1.0.2
+ * https://github.com/singno/approach/
+ *
+ * Copyright 2014, singno
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ *
+ */
 ;(function (window, document, $) {
 	'use script';
+
+	function throttle (fn, ms) {
+		var timer;
+		ms = ms || 25;
+
+		return function () {
+			clearTimeout(timer);
+			timer = setTimeout(fn, ms);
+		};
+	}
 
 	function Approach (element, options) {
 		this.$element = $(element);
 		this.options = options;
-		this.disabled = false;
+		this.disabled =
+		this.locked = false;
+		this.$bind = this.isWindow() ? $(window) : this.$element;
+		this.throttled = throttle($.proxy(this.update, this), this.options.throttleTime);
 
-		var timer,
-			callback = $.proxy(this.update, this);
-
-		this.triggerCallback = function () {
-			clearTimeout(timer);
-			timer = setTimeout(callback, this.options.throttleTime); 
-		};
-
-		(this.isWindow() ? $(window) : this.$element).on('scroll.approach resize.approach', this.triggerCallback);
+		this.$bind.on('scroll.approach resize.approach', this.throttled);
 	}
 
 	Approach.DEFAULTS = {
@@ -26,7 +41,8 @@
 
 	Approach.prototype = {
 		enable: function () {
-			this.disabled = false;
+			this.disabled =
+			this.locked = false;
 		},
 
 		disable: function () {
@@ -34,26 +50,30 @@
 		},
 
 		destroy: function () {
-			this.$element
-			.data('approach', null)
-			.off('.approach', this.triggerCallback);	
+			this.data('approach', null);
+			this.$bind.off('.approach', this.throttled);	
 		},
 
 		update: function () {
-			var fn = this.options.callback,
-				predicate = this.horizental ? this.nearRight : this.nearBottom;
+			if (this.disabled) {
+				return ;
+			}
+
+			var predicate = this.horizental ? this.nearRight : this.nearBottom;
 
 			if (predicate.call(this)) {
-				if (this.disabled) {
+				if (this.locked) {
 					return ;
 				}
 
-				this.disable();
-				fn.call(this.$element[0], {
+				// Lock status thus callback will not fire continuous.
+				this.locked = true;
+				this.options.callback.call(this.$element[0], {
 					options: $.extend({}, this.options)
 				}); 
 			} else {
-				this.enable();
+				// Release lock when scroll out of `approach threshold`.
+				this.locked = false;
 			}
 		},
 
@@ -61,13 +81,10 @@
 			var element = this.$element[0];
 			var nodeName;
 
+			// Treat window, document, document.documentElement and document.body as window.
 			return $.isWindow(element) 
 			|| element.nodeType === 9
 			|| ((nodeName = element.nodeName.toLowerCase()) && (nodeName === 'html' || nodeName === 'body'));
-		},
-
-		inEdge: function () {
-			return this.nearBottom() || this.nearRight();	
 		},
 
 		nearBottom: function () {
@@ -116,22 +133,24 @@
 
 		this.each(function () {
 			var $this = $(this),
-				options = $.extend({}, Approach.DEFAULTS, typeof option === 'object' && option),
 				data = $this.data('approach');
 
-			if (!data) {
-				$this.data('approach', data = [new Approach(this, options)]);
-			} else {
-				$this.data('approach', data = data.concat(new Approach(this, options)));
+			if (typeof option === 'string') {
+				return $.each(data, function (idx, val) {
+					val[option]();
+				});
 			}
 
-			$.each(data, function (idx, val) {
-				if (typeof option === 'string') {
-					val[option]();
-				} else {
-					val.update();
-				}
-			});
+			var options = $.extend({}, Approach.DEFAULTS, typeof option === 'object' && option),
+				inst = new Approach(this, options);
+
+			if (!data) {
+				$this.data('approach', [inst]);
+			} else {
+				$this.data('approach', data.concat(inst));
+			}
+
+			inst.update();
 		});
 
 		return this;
