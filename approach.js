@@ -74,7 +74,8 @@
 				// Lock status thus callback will not fire continuous.
 				this.locked = true;
 				this.options.callback.call(this.$element[0], {
-					options: $.extend({}, this.options)
+					options: $.extend({}, this.options),
+					approacher: this
 				}); 
 			} else {
 				// Release lock when scroll out of `approach threshold`.
@@ -141,13 +142,16 @@
 				data = $this.data('approach');
 
 			if (typeof option === 'string') {
-				return $.each(data, function (idx, val) {
+				$.each(data, function (idx, val) {
 					val[option]();
 				});
+				return this;
 			}
 
 			var options = $.extend({}, Approach.DEFAULTS, typeof option === 'object' && option),
 				inst = new Approach(this, options);
+
+			$.fn.approach.last = inst;
 
 			if (!data) {
 				$this.data('approach', [inst]);
@@ -164,6 +168,8 @@
 	};
 
 	$.fn.approach.Constructor = Approach;
+
+	$.fn.approach.last = null; // Save the last instance.
 
 	$.fn.approach.noConflict = function () {
 		$.fn.approach = old;
