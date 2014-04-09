@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>approach test</title>
+	<style type="text/css">
+	* {
+		text-align: center;
+	}
+	</style>
+</head>
+<body>
+<div style="position:fixed;width:100%;">
+	<h1>Test approach</h1>
+	<h3 id="test1">1. no approach</h3>
+	<button onclick="update();">update</button>
+</div>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="./approach.js"></script>
+<script>
+var count1 = 1;
+
+$(function () {
+	$(document.documentElement).approach(function () {
+		$('#test1').text('window approach ' + (count1++) + ' times');
+	});
+});
+
+function update () {
+	$(document.documentElement).approach('update');
+}
+</script>
+</body>
+</html>

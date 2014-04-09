@@ -27,7 +27,7 @@
 		this.disabled =
 		this.locked = false;
 		this.$bind = this.isWindow() ? $(window) : this.$element;
-		this.throttled = throttle($.proxy(this.update, this), this.options.throttleTime);
+		this.throttled = throttle($.proxy(this.inspect, this), this.options.throttleTime);
 
 		this.$bind.on('scroll.approach resize.approach', this.throttled);
 	}
@@ -55,6 +55,11 @@
 		},
 
 		update: function () {
+			this.locked = false;
+			this.inspect();
+		},
+
+		inspect: function () {
 			if (this.disabled) {
 				return ;
 			}
@@ -150,7 +155,9 @@
 				$this.data('approach', data.concat(inst));
 			}
 
-			inst.update();
+			$(function () {
+				inst.inspect();
+			});
 		});
 
 		return this;
