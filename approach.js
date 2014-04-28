@@ -21,8 +21,9 @@
 		};
 	}
 
-	function Approach (element, options) {
+	function Approach (element, callback, options) {
 		this.$element = $(element);
+		this.callback = callback;
 		this.options = options;
 		this.disabled =
 		this.locked = false;
@@ -34,8 +35,7 @@
 
 	Approach.DEFAULTS = {
 		threshold: 20,
-		callback: $.noop,
-		horizental: false,
+		horizontal: false,
 		throttleTime: 25
 	};
 
@@ -43,44 +43,50 @@
 		enable: function () {
 			this.disabled =
 			this.locked = false;
+			return this;
 		},
 
 		disable: function () {
 			this.disabled = true;
+			return this;
 		},
 
 		destroy: function () {
 			this.data('approach', null);
 			this.$bind.off('.approach', this.throttled);	
+			return this;
 		},
 
 		update: function () {
 			this.locked = false;
 			this.inspect();
+			return this;
 		},
 
 		inspect: function () {
 			if (this.disabled) {
-				return ;
+				return this;
 			}
 
-			var predicate = this.horizental ? this.nearRight : this.nearBottom;
+			var predicate = this.options.horizontal ? this.nearRight : this.nearBottom;
 
 			if (predicate.call(this)) {
 				if (this.locked) {
-					return ;
+					return this;
 				}
 
 				// Lock status thus callback will not fire continuous.
 				this.locked = true;
-				this.options.callback.call(this.$element[0], {
+				this.callback.call(this.$element[0], {
 					options: $.extend({}, this.options),
-					approacher: this
+					context: this
 				}); 
 			} else {
 				// Release lock when scroll out of `approach threshold`.
 				this.locked = false;
 			}
+
+			return this;
 		},
 
 		isWindow: function () {
@@ -132,35 +138,31 @@
 
 	var old = $.fn.approach;
 
-	$.fn.approach = function (option) {
-		option = typeof option === 'function' ? {
-			callback: option
-		} : option;
-
+	$.fn.approach = function (func, option) {
 		this.each(function () {
 			var $this = $(this),
 				data = $this.data('approach');
 
-			if (typeof option === 'string') {
+			if (typeof func === 'string') {
 				$.each(data, function (idx, val) {
-					val[option]();
+					val[func]();
 				});
 				return this;
 			}
 
 			var options = $.extend({}, Approach.DEFAULTS, typeof option === 'object' && option),
-				inst = new Approach(this, options);
+				app = new Approach(this, func, options);
 
-			$.fn.approach.last = inst;
+			$.fn.approach.last = app;
 
 			if (!data) {
-				$this.data('approach', [inst]);
+				$this.data('approach', [app]);
 			} else {
-				$this.data('approach', data.concat(inst));
+				$this.data('approach', data.concat(app));
 			}
 
 			$(function () {
-				inst.inspect();
+				app.inspect();
 			});
 		});
 

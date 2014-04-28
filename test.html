@@ -8,10 +8,11 @@
 	}
 	</style>
 </head>
-<body style="height:1000px;">
+<body style="height:1000px;width:2000px;">
 <div style="position:fixed;width:100%;">
 	<h1>Test approach</h1>
 	<h3 id="test1">1. no approach</h3>
+	<h3 id="test4">2. no approach</h3>
 	<h3 id="test2">2. no approach</h3>
 	<h3 id="test3">3. no approach</h3>
 </div>
@@ -23,11 +24,14 @@
 <script>
 var count1 = 1,
 	count2 = 1,
-	count3 = 1;
+	count3 = 1,
+	count4 = 1;
 
 $(function () {
 	$(document.documentElement).approach(function () {
 		$('#test1').text('window approach ' + (count1++) + ' times');
+	}, {
+		threshold: 100
 	});
 
 	$('#scroller').approach(function () {
@@ -36,6 +40,13 @@ $(function () {
 
 	$('#scroller').approach(function () {
 		$('#test3').text('div approach ' + (count3++) + ' times');
+	});
+
+	$(window).approach(function () {
+		$('#test4').text('window horizontal approach ' + (count4++) + ' times');
+	}, {
+		threshold: 300,
+		horizontal: true
 	});
 });
 </script>
