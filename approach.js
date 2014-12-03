@@ -1,5 +1,5 @@
 /*
- * Jquery approach 1.0.2
+ * Jquery approach 1.0.3
  * https://github.com/singno/approach/
  *
  * Copyright 2014, singno
@@ -77,10 +77,10 @@
 
 				// Lock status thus callback will not fire continuous.
 				this.locked = true;
-				this.callback.call(this.$element[0], {
-					options: $.extend({}, this.options),
-					context: this
-				}); 
+				this.callback.call(this, {
+					target: this.$element[0],
+					options: $.extend({}, this.options)
+				}, this); 
 			} else {
 				// Release lock when scroll out of `approach threshold`.
 				this.locked = false;
@@ -148,6 +148,12 @@
 					val[func]();
 				});
 				return this;
+			}
+
+			if (typeof +option === 'number') {
+				option = {
+					threshold: option
+				};
 			}
 
 			var options = $.extend({}, Approach.DEFAULTS, typeof option === 'object' && option),
