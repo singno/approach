@@ -52,7 +52,7 @@
 		},
 
 		destroy: function () {
-			this.data('approach', null);
+			this.$element.data('approach', null);
 			this.$bind.off('.approach', this.throttled);	
 			return this;
 		},
@@ -78,8 +78,7 @@
 				// Lock status thus callback will not fire continuous.
 				this.locked = true;
 				this.callback.call(this, {
-					target: this.$element[0],
-					options: $.extend({}, this.options)
+					target: this.$element[0]
 				}, this); 
 			} else {
 				// Release lock when scroll out of `approach threshold`.
