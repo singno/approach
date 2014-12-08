@@ -1,5 +1,5 @@
 /*
- * Jquery approach 1.0.3
+ * Jquery approach 1.1.0
  * https://github.com/singno/approach/
  *
  * Copyright 2014, singno
@@ -8,7 +8,7 @@
  * http://www.opensource.org/licenses/MIT
  *
  */
-;(function (window, document, $) {
++(function (window, document, $) {
 	'use script';
 
 	function throttle (fn, ms) {
@@ -22,15 +22,29 @@
 	}
 
 	function Approach (element, callback, options) {
+		if (!(this instanceof Approach)) {
+			return new Approach(element, callback, options);
+		}
+
+		options = $.extend({}, options, Approach.DEFAULTS);
+
 		this.$element = $(element);
 		this.callback = callback;
 		this.options = options;
 		this.disabled =
 		this.locked = false;
 		this.$bind = this.isWindow() ? $(window) : this.$element;
-		this.throttled = throttle($.proxy(this.inspect, this), this.options.throttleTime);
+		this.throttled = throttle($.proxy(this.check, this), this.options.throttleTime);
 
 		this.$bind.on('scroll.approach resize.approach', this.throttled);
+		this.wrapper = {
+			enable: $.proxy(this.enable, this),
+			disable: $.proxy(this.disable, this),
+			destroy: $.proxy(this.destroy, this),
+			checkForUpdate: $.proxy(this.checkForUpdate, this)
+		};
+
+		return this.wrapper;
 	}
 
 	Approach.DEFAULTS = {
@@ -52,18 +66,17 @@
 		},
 
 		destroy: function () {
-			this.$element.data('approach', null);
 			this.$bind.off('.approach', this.throttled);	
 			return this;
 		},
 
-		update: function () {
+		checkForUpdate: function () {
 			this.locked = false;
-			this.inspect();
+			this.check();
 			return this;
 		},
 
-		inspect: function () {
+		check: function () {
 			if (this.disabled) {
 				return this;
 			}
@@ -77,9 +90,7 @@
 
 				// Lock status thus callback will not fire continuous.
 				this.locked = true;
-				this.callback.call(this, {
-					target: this.$element[0]
-				}, this); 
+				this.callback(this.wrapper); 
 			} else {
 				// Release lock when scroll out of `approach threshold`.
 				this.locked = false;
@@ -135,52 +146,5 @@
 		}
 	};
 
-	var old = $.fn.approach;
-
-	$.fn.approach = function (func, option) {
-		this.each(function () {
-			var $this = $(this),
-				data = $this.data('approach');
-
-			if (typeof func === 'string') {
-				$.each(data, function (idx, val) {
-					val[func]();
-				});
-				return this;
-			}
-
-			if (typeof +option === 'number') {
-				option = {
-					threshold: option
-				};
-			}
-
-			var options = $.extend({}, Approach.DEFAULTS, typeof option === 'object' && option),
-				app = new Approach(this, func, options);
-
-			$.fn.approach.last = app;
-
-			if (!data) {
-				$this.data('approach', [app]);
-			} else {
-				$this.data('approach', data.concat(app));
-			}
-
-			$(function () {
-				app.inspect();
-			});
-		});
-
-		return this;
-	};
-
-	$.fn.approach.Constructor = Approach;
-
-	$.fn.approach.last = null; // Save the last instance.
-
-	$.fn.approach.noConflict = function () {
-		$.fn.approach = old;
-		return this;
-	};
-
+	$.Approach = Approach;
 })(window, document, jQuery);
